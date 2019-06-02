@@ -8,6 +8,7 @@ from .models import(
     PageAccessToken,
     ContentSendInbox,
     DataUIDOfPage,
+    ContentSendInbox,
 )
 # Register your models here.
 

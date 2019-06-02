@@ -1,9 +1,16 @@
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
 {% block content %}
   <div class="container">
+        <div class="col-lg-8 col-md-8">
+                <a style="font-size: 48px;" href="{% url 'page-tools:list-pages-inbox-tool' %}">
+                    <i class="fas fa-home"></i>
+                </a>
+                    <strong>{{page.name}}</strong>
+            </div>
       <div class="row">
           <div class="col">
-              <h4 class="text-center">Nick Gửi Tin</h4>
+              <h4 class="text-center">TOKEN PAGE MANAGER</h4>
               <div class="card">
                   <div class="card-body">
                         <form method="POST">
@@ -37,7 +44,7 @@
                                         </a>
                                     </td>
                                     <td><img src="{{token_page_manager.tokenpagemanagerprofile.profile_picture_link}}" width="50px"></td>
-                                    <td><button class="btn btn-danger btn-sm">Xóa</button></td>
+                                    <td><a href="{% url 'page-tools:page-delete-token-page-manager' page.pk token_page_manager.pk%}" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa Token này không');">Xóa</a></td>
                                 </tr>
 
                               {% endfor %}
@@ -47,8 +54,26 @@
               </div>
           </div>
           <div class="col">
-              <h4 class="text-center">Content Gửi Tin</h4>
+              <h4 class="text-center">CONTENT</h4>
+              <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{form|crispy}}
+                <div class="form-group text-right">
+                    <button type="submit" class="btn btn-success">Thêm Content</button>
+                </div>
+            </form>
           </div>
       </div>
   </div>
 {% endblock content %}
+{% block script %}
+  <script>
+      $(document).ready(function() {
+        $("#content").emojioneArea({
+            pickerPosition: "bottom",
+            filtersPosition: "bottom",
+            tonesStyle: "checkbox"
+        });
+    });
+  </script>
+{% endblock script %}

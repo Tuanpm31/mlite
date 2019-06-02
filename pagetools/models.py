@@ -1,6 +1,6 @@
 from django.db import models
 from accounts.models import User
-from django.db.models.signals import post_save
+from PIL import Image
 import facebook
 
 
@@ -72,3 +72,4 @@ class PageAccessToken(models.Model):
 class ContentSendInbox(models.Model):
     page = models.ForeignKey(PageOwnerByTokenUser, related_name='contents', on_delete=models.CASCADE)
     content = models.TextField()
+    image = models.ImageField(upload_to='image_send_inbox', blank=True, null=True)

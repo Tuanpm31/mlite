@@ -15,6 +15,7 @@ from .models import (
     DataUIDOfPage,
     TokenPageManager,
 )
+from .forms import CreateContentSendInbox
 import facebook
 import requests
 import json
@@ -290,11 +291,33 @@ def page_setting_send_inbox(request, pk):
                         messages.warning('Không Phải Token Page Manager, Hãy thử lại Token khác nhé!!')
             except:
                 messages.warning(request, 'Token Lỗi, Hãy Thử Lại!')
+        create_content_form = CreateContentSendInbox(request.POST, request.FILES)
+        if create_content_form.is_valid():
+            create_content = create_content_form.save(commit=False)
+            create_content.page = page
+            create_content.save()
+            messages.success(request, 'Thêm Content Thành Công!')
         return HttpResponseRedirect(request.path_info)
+    else:
+        create_content_form = CreateContentSendInbox()
+        
     context = {
         'title': '{0} Setting'.format(page.name),
         'logged_in_token_user': logged_in_token_user,
         'page': page,
-        'tokens_page_manager': tokens_page_manager
+        'tokens_page_manager': tokens_page_manager,
+        'form': create_content_form
     }
     return render(request, 'pagetools/page_setting_send_inbox.html', context=context)
+
+
+@login_required
+@user_passes_test(check_is_logged_in, login_url='token:list-tokenuser')
+@page_belong_to_token_user_profile
+def delete_token_page_manager(request, pk, token_page_manager_pk):
+    logged_in_token_user = TokenUser.objects.get(user=request.user, is_logged_in=True)
+    token_user_profile = logged_in_token_user.tokenuserprofile
+    token_page_manager = get_object_or_404(TokenPageManager, pk=token_page_manager_pk)
+    token_page_manager.delete()
+    messages.success(request, 'Xóa Token Page Manager thành công !!')
+    return redirect('page-tools:page-setting-send-inbox', pk=pk)
