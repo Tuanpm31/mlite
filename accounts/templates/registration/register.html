@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="container">
+        <div class="jumbotron">
+            <h2 class="display-4 text-center">Đăng Ký</h2>
+            <form method="POST">
+                {% csrf_token %}
+                {{ form|crispy }}
+            <div class="form-group text-center">
+                <button class="btn btn-secondary btn-lg btn-block" type="submit">Đăng ký</button>
+            </div>
+            <hr class="my-4">
+                <p class="text-center">Nếu đã có tài khoản, hãy <a href="{% url 'login' %}">Đăng nhập</a>
+            </form> 
+        </div>
+    </div>
+    
+{% endblock content %}

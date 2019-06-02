@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="container">
+      <div class="row">
+          <div class="col">
+              <h4 class="text-center">Nick Gửi Tin</h4>
+              <div class="card">
+                  <div class="card-body">
+                        <form method="POST">
+                                {% csrf_token %}
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" name='tokenpagemanageradded' id="tokenpagemanageradded" placeholder="Thêm Token Page Manager">
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-primary">Cập nhật</button>
+                                    </div>
+                                </div>
+                            </form>
+                      <table class="table">
+                          <caption>Hệ thống sẽ tự động kiểm tra Token Die khi bạn reload page</caption>
+                          <thead class="th-dark">
+                              <tr>
+                                  <th scope="col">#</th>
+                                  <th scope="col">Tên</th>
+                                  <th scope="col">Ảnh</th>
+                                  <th scope="col">Action</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              {% for token_page_manager in tokens_page_manager  %}
+                                <tr>
+                                    <th scope="row">{{ forloop.counter }}</th>
+                                    <td>
+                                        <a href="{{token_page_manager.tokenpagemanagerprofile.profile_link}}" target="_blank">
+                                            {{token_page_manager.tokenpagemanagerprofile.name}}
+                                            <br>
+                                            <small>{{token_page_manager.tokenpagemanagerprofile.uid}}</small>
+                                        </a>
+                                    </td>
+                                    <td><img src="{{token_page_manager.tokenpagemanagerprofile.profile_picture_link}}" width="50px"></td>
+                                    <td><button class="btn btn-danger btn-sm">Xóa</button></td>
+                                </tr>
+
+                              {% endfor %}
+                          </tbody>
+                      </table>
+                  </div>
+              </div>
+          </div>
+          <div class="col">
+              <h4 class="text-center">Content Gửi Tin</h4>
+          </div>
+      </div>
+  </div>
+{% endblock content %}

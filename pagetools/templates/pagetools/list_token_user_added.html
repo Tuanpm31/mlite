@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="container">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" name='tokenuseradded' id="tokenuseradded" placeholder="Thêm Token">
+                <div class="input-group-append">
+                    <button type="submit" class="btn btn-primary">Cập nhật</button>
+                </div>
+            </div>
+        </form>
+        <hr>
+        <table class="table">
+            <thead class="thead-dark">
+                <tr>
+                <th scope="col">#</th>
+                <th scope="col">Tên</th>
+                <th scope="col">Ảnh</th>
+                <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for token in tokens_user %}
+                <tr>
+                    <th scope="row">{{forloop.counter}}</th>
+                    <td>
+                        {{token.tokenuserprofile.name}}
+                        <br>
+                        <small>{{token.tokenuserprofile.uid}}</small>
+                    </td>
+                    <td><img src="{{token.tokenuserprofile.profile_picture_link}}" width="50px"></td>
+                    <td>
+                        <a href="{% url 'token:login-tokenuser' token.pk %}" class="btn btn-success btn-sm">Đăng nhập</a>
+                        <a href="{% url 'token:delete-tokenuser' token.pk %}" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa Token này không');">Xóa</button>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">Chưa có token nào!</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <hr>
+        <div class="text-right">
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="checklive" value="CheckTokenLive"/>
+                <button type="Submit" class="btn btn-secondary">Check Token Live</button>
+            </form>
+        </div>
+    </div>
+{% endblock content %}

@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="container">
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status" style="display:none;">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <form method="POST" name="ajaxsend" id="ajaxsend">
+            {% csrf_token %}
+            <textarea name='name'></textarea>
+            <button type="submit" class="btn btn-secondary">Submit</button>
+        </form>
+        <div id="progress"></div>
+    </div>
+{% endblock content %}
+{% block script %}
+    <script>
+        $("#ajaxsend").on('submit', function(e) {
+            e.preventDefault();
+            $(".spinner-border").show();
+            var list = $('textarea[name="name"]').val();
+            $.ajax({
+                type: "POST",
+                url: "/ajaxresponse/",
+                data: {
+                    list: list,
+                    i: 0
+                },
+                beforeSend: function(xhr, settings) {
+                    function getCookie(name) {
+                        var cookieValue = null;
+                        if (document.cookie && document.cookie != '') {
+                            var cookies = document.cookie.split(';');
+                            for (var i = 0; i < cookies.length; i++) {
+                                var cookie = jQuery.trim(cookies[i]);
+                                // Does this cookie string begin with the name we want?
+                                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                    break;
+                                }
+                            }
+                        }
+                        return cookieValue;
+                    }
+                    if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                        // Only send the token to relative URLs i.e. locally.
+                        xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                    }
+                },
+                success: function(data) {
+                    console.log(data);
+                    console.log(data.order.i)
+                    run(data.order)
+                }
+            });
+        });
+        function run(params) {
+            $.ajax({
+                type: "POST",
+                url: "/sendinbox/",
+                data: {
+                    'name[]': params.name,
+                    'i': params.i
+                },
+                beforeSend: function(xhr, settings) {
+                    function getCookie(name) {
+                        var cookieValue = null;
+                        if (document.cookie && document.cookie != '') {
+                            var cookies = document.cookie.split(';');
+                            for (var i = 0; i < cookies.length; i++) {
+                                var cookie = jQuery.trim(cookies[i]);
+                                // Does this cookie string begin with the name we want?
+                                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                    break;
+                                }
+                            }
+                        }
+                        return cookieValue;
+                    }
+                    if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                        // Only send the token to relative URLs i.e. locally.
+                        xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                    }
+                },
+                success: function(data) {
+                    console.log(data);
+                    $("#progress").append(data.mess)
+                    if (data.order.i < 2) {
+                        run(data.order)
+                    }
+                }
+            })
+            
+        }
+    </script>
+{% endblock script %}

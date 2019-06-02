@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="col-lg-8 col-md-8">
+        <a style="font-size: 48px;" href="{% url 'page-tools:list-pages-inbox-tool' %}">
+            <i class="fas fa-home"></i>
+        </a>
+            {{page.name}}
+    </div>
+    <div class="col-lg-4 col-md-4">
+        <a href="{% url 'page-tools:page-get-all-uid' page.pk %}" class="btn btn-success">Quét tất cả UID</a>
+        <a href="{% url 'page-tools:page-setting-send-inbox' page.pk %}" class="btn btn-danger">Gửi Inbox</a>
+    </div>
+    <div class="row">
+        <div class="col-lg-12 col-xl-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-subtitle mb-2 text-muted text-center">Thống Kê</h4>
+                        <hr>
+                        <p>Tổng: {{total_count}}</p>
+                        <p>Nam: {{male_count}}</p>
+                        <p>Nữ: {{female_count}}</p>
+                        <p>Không giới tính: {{nogender_count}}</p>
+                        <a href="{% url 'page-tools:page-export-all-data' page.pk %}" target="_blank" class="btn btn-outline-primary">Xuất Toàn Bộ Dữ Liệu</a>
+                    </div>
+                </div>
+        </div>
+        <div class="col-lg-12 col-xl-9">
+                <div class="card">
+                    <h4 class="card-subtitle mb-2 text-muted text-center">DANH SÁCH UID</h4>
+                    <div class="card-body">
+                            <table class="table table-hover">
+                                    <thead class="thead-dark">
+                                      <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Tên</th>
+                                        <th scope="col">UID</th>
+                                        <th scope="col">Giới Tính</th>
+                                        <th scope="col">Tin Nhắn Cuối</th>     
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {% for each_data in data %}
+                                      <tr>
+                                          <th scope="row">{{forloop.counter0|add:data.start_index}}</th>
+                                          <td>{{each_data.name}}</td>
+                                          <td><a href="https://www.facebook.com/{{each_data.uid}}">{{each_data.uid}}</a></td>
+                                          <td>{{each_data.gender}}</td>
+                                          <td>{{each_data.last_updated}}</td>
+                                        </tr>
+                                      {% empty %}
+                                        <tr>
+                                          <th colspan="5" scope="row" class="text-center">Chưa Có Data, <a href="{% url 'page-tools:page-get-all-uid' page.pk %}">Quét Ngay</a></td>
+                                        </tr>
+                                      {% endfor %}
+                                    </tbody>
+                            </table>
+                            <ul class="pagination justify-content-end">
+                              {% if data.has_previous %}
+                                <li class="page-item"><a href="?page=1" class="page-link">First</a></li>
+                                <li class="page-item"><a href="?page={{data.previous_page_number}}" class="page-link">Previous</a></li>
+                              {% endif %}
+                              {% for num in data.paginator.page_range  %}
+                                {% if data.number == num %}
+                                  <li class="page-item active"><a href="?page={{num}}" class="page-link">{{num}}</a></li>
+                                {% elif num > data.number|add:'-3' and num < data.number|add:'3' %}
+                                  <li class="page-item"><a href="?page={{num}}" class="page-link">{{num}}</a></li>
+                                {% endif %}
+                              {% endfor %}
+                              {% if data.has_next %}
+                                <li class="page-item"><a href="?page={{data.next_page_number}}" class="page-link">Next</a></li>
+                                <li class="page-item"><a href="?page={{data.paginator.num_pages}}" class="page-link">Last</a></li>
+                              {% endif %}
+                            </ul>
+                    </div>
+                </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

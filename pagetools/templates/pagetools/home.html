@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="container">
+        <div>
+            <span style="font-size: 48px; color: #666666">
+                <i class="fas fa-flag"></i>
+            </span>
+            <h4>Tool for Page</h4>
+        </div>
+        <hr>
+        <div class="list-group">
+            <a href="{% url 'page-tools:list-pages-inbox-tool' %}" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-primary">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">Gửi tin nhắn hàng loạt khách hàng cũ</h5>
+                <span style="font-size: 30px; color: #666666">
+                    <i class="far fa-envelope"></i>
+                </span>
+                </div>
+                <p class="mb-1">Tool gửi tin nhắn hàng loạt cho khách hàng cũ không spam</p>
+            </a>
+            <hr>
+            <a href="#" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-warning">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">Quét UID, Conversation-id inbox, xuất ra file Excel</h5>
+                <span style="font-size: 30px; color: #666666">
+                    <i class="far fa-file-excel"></i>
+                </span>
+                </div>
+                <p class="mb-1">Tool quét UID, Conversation-id tệp khách hàng đã từng nhắn tin</p>
+            </a>
+        </div>
+    </div>
+{% endblock content %}

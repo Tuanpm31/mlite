@@ -1,0 +1,28 @@
+<div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
+  <a class="mr-md-auto font-weight-normal" href="#">
+  {% load static %}
+    <img alt="Mlite Logo" class="header__logo" src="{% static 'images/logo.svg' %}">
+  </a>
+  
+  <nav class="my-2 my-md-0 mr-md-3">
+    {% if user.is_authenticated %}
+      {% if logged_in_token_user %}
+        <div class="dropdown">
+          <button class="btn dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <img src="{{logged_in_token_user.tokenuserprofile.profile_picture_link}}" class="rounded-circle image-token-user-navbar">
+            <span>{{logged_in_token_user.tokenuserprofile.name}}<span>
+          </button>
+          <div class="dropdown-menu">
+            <a class="dropdown-item" href="{% url 'token:logout-tokenuser' logged_in_token_user.pk %}">Chọn Token Khác</a>
+            <a class="dropdown-item" href="{% url 'logout' %}">Đăng xuất khỏi {{user.username}}</a>
+          </div>
+        </div>
+      {% else %}
+        <a class="btn btn-outline-dark" href="{% url 'logout' %}">Đăng xuất</a>
+      {% endif %}
+  </nav>
+    {% else %}
+      <a class="btn btn-dark" href="{% url 'register' %}">Đăng Ký</a>
+      <a class="btn btn-success" href="{% url 'login' %}">Đăng Nhập</a>
+    {% endif %}
+</div> 

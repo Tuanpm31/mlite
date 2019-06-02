@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 363 193">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #888686;
+        font-size: 111px;
+        font-family: SegoePrint, Segoe Print;
+      }
+
+      .cls-2, .cls-4 {
+        fill: none;
+      }
+
+      .cls-2 {
+        stroke: #707070;
+      }
+
+      .cls-3 {
+        stroke: none;
+      }
+    </style>
+  </defs>
+  <g id="Logo_MLite" data-name="Logo MLite" transform="translate(-466 -159)">
+    <text id="M_Lite" data-name="M Lite" class="cls-1" transform="translate(466 297)"><tspan x="0" y="0">M Lite</tspan></text>
+    <g id="Rectangle_1" data-name="Rectangle 1" class="cls-2" transform="translate(466 208)">
+      <rect class="cls-3" width="105" height="102" rx="8"/>
+      <rect class="cls-4" x="0.5" y="0.5" width="104" height="101" rx="7.5"/>
+    </g>
+  </g>
+</svg>

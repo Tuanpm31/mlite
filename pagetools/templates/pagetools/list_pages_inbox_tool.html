@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="container">
+    <h4 class="text-center">Chọn Trang Cần Sử Dụng Tool</h4>
+    <hr>
+      <table class="table">
+        <thead class="thead-dark">
+            <tr>
+            <th scope="col">#</th>
+            <th scope="col">Tên</th>
+            <th scope="col">Likes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for page in pages %}
+                <tr>
+                    <th scope="row">{{forloop.counter}}</th>
+                    <td style="height: 110px;">
+                        <a href="{% url 'page-tools:page-detail' page.pk %}">
+                            <div class="d-inline-block">
+                                <img src="{{page.profile_picture_link}}" width="70px">
+                                <div class="d-inline-block">
+                                    <h6>{{page.name}}</h6>
+                                    <small>{{page.uid}}</small>
+                                </div>
+                            </div>
+                        </a>
+                    </td>
+                    <td>{{page.likes}}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">Chưa Page Nào</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+      </table>
+  </div>
+{% endblock content %}
