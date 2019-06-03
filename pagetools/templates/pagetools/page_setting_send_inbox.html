@@ -50,6 +50,9 @@
                               {% endfor %}
                           </tbody>
                       </table>
+                      <div class="text-muted">
+                          Hiện Có 1 Content và 2 Token Page Manager
+                      </div>
                   </div>
               </div>
           </div>
@@ -64,6 +67,34 @@
             </form>
           </div>
       </div>
+      <div class="card">
+        <div class="card-body">
+            <table class="table">
+                <h4 class="text-center">Danh sách Content</h4>
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Ảnh</th>
+                        <th scope="col">Content</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                    <tbody>
+                        {% for content in contents %}
+                            <tr>
+                                <th scope="col">{{forloop.counter}}</th>
+                                <td><img src="{{ MEDIA_URL }}{{content.image}}" alt="" width="40px"></td>
+                                <td>{{content.content}}</td>
+                                <td>
+                                    <a href="{% url 'page-tools:page-update-content' page.pk content.pk %}" class="btn btn-primary btn-sm">Cập nhật</a>
+                                    <a href="{% url 'page-tools:page-delete-content' page.pk content.pk %}" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa tin nhắn này không?')">Xóa</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </thead>
+            </table>
+        </div>
+    </div>
   </div>
 {% endblock content %}
 {% block script %}

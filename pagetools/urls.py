@@ -11,6 +11,8 @@ from .views import (
     export_file_data_uid,
     page_setting_send_inbox,
     delete_token_page_manager,
+    delete_content_send_inbox,
+    update_content_send_inbox,
     home,
 )
 
@@ -31,6 +33,8 @@ urlpatterns = [
         path('inboxpage/<int:pk>/export/', export_file_data_uid, name='page-export-all-data'),
         path('inboxpage/<int:pk>/content/', page_setting_send_inbox, name='page-setting-send-inbox'),
         path('inboxpage/<int:pk>/deletetokenpagemanager/<int:token_page_manager_pk>/', delete_token_page_manager, name='page-delete-token-page-manager'),
+        path('inboxpage/<int:pk>/deletecontent/<int:content_pk>/', delete_content_send_inbox, name='page-delete-content'),
+        path('inboxpage/<int:pk>/updatecontent/<int:content_pk>/', update_content_send_inbox, name='page-update-content'),
     ], 'pagetools'), namespace='page-tools'))
 
 ]

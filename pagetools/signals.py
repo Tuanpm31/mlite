@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save, m2m_changed
+from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from .models import (
     TokenUser,
@@ -7,8 +7,10 @@ from .models import (
     TokenPageManager,
     TokenPageManagerProfile,
     PageAccessToken,
+    ContentSendInbox,
 )
 import facebook
+import os
 
 @receiver(post_save, sender=TokenUser)
 def create_token_user_profile(sender, instance, created, **kwargs):
@@ -61,3 +63,7 @@ def create_token_page_manager_profile_and_page_access_token(sender, instance, cr
         token_page_manager_profile = TokenPageManagerProfile.objects.create(token_page_manager=instance, name=name, uid=uid, profile_picture_link=profile_picture_link, profile_link=profile_link)
         page_access_token = graph.get_object('{0}?fields=access_token'.format(page.uid))['access_token']
         page_access_token_create = PageAccessToken.objects.create(token_page_manager=instance, page_access_token=page_access_token)
+
+@receiver(post_delete, sender=ContentSendInbox)
+def delete_content_send_inbox(sender, instance, **kwargs):
+    instance.image.delete(False)

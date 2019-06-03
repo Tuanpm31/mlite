@@ -14,8 +14,11 @@ from .models import (
     PageOwnerByTokenUser,
     DataUIDOfPage,
     TokenPageManager,
+    ContentSendInbox,
 )
-from .forms import CreateContentSendInbox
+from django.core import serializers
+from .forms import CreateContentSendInbox, UpdateContentSendInbox
+import os
 import facebook
 import requests
 import json
@@ -267,6 +270,7 @@ def page_setting_send_inbox(request, pk):
     token_user_profile = logged_in_token_user.tokenuserprofile
     page = get_object_or_404(PageOwnerByTokenUser, pk=pk)
     tokens_page_manager = TokenPageManager.objects.filter(token_user_profile=token_user_profile, page=page)
+    contents = page.contents.all()
     for token_page_manager in tokens_page_manager:
         page_access_token = token_page_manager.pageaccesstoken.page_access_token
         try:
@@ -306,7 +310,8 @@ def page_setting_send_inbox(request, pk):
         'logged_in_token_user': logged_in_token_user,
         'page': page,
         'tokens_page_manager': tokens_page_manager,
-        'form': create_content_form
+        'form': create_content_form,
+        'contents': contents
     }
     return render(request, 'pagetools/page_setting_send_inbox.html', context=context)
 
@@ -321,3 +326,31 @@ def delete_token_page_manager(request, pk, token_page_manager_pk):
     token_page_manager.delete()
     messages.success(request, 'Xóa Token Page Manager thành công !!')
     return redirect('page-tools:page-setting-send-inbox', pk=pk)
+    
+@login_required
+@user_passes_test(check_is_logged_in, login_url='token:list-tokenuser')
+@page_belong_to_token_user_profile
+def delete_content_send_inbox(request, pk, content_pk):
+    content = get_object_or_404(ContentSendInbox, pk=content_pk)
+    content.delete()
+    messages.success(request, 'Xóa Tin Nhắn Thành Công!!!')
+    return redirect('page-tools:page-setting-send-inbox', pk=pk)
+
+@login_required
+@user_passes_test(check_is_logged_in, login_url='token:list-tokenuser')
+@page_belong_to_token_user_profile
+def update_content_send_inbox(request, pk, content_pk):
+    content = get_object_or_404(ContentSendInbox, pk=content_pk)
+    if request.method == 'POST':
+        form = UpdateContentSendInbox(request.POST, request.FILES, instance=content)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Cập Nhật Content Thành Công!!')
+            return redirect('page-tools:page-setting-send-inbox', pk=pk)
+    else:
+        form = UpdateContentSendInbox(instance=content)
+    context = {
+        'content': content,
+        'form': form
+    }
+    return render(request, 'pagetools/page_update_content.html', context=context)
