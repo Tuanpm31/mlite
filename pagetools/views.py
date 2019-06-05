@@ -165,6 +165,35 @@ def list_pages_inbox_tool(request):
 
 @login_required
 @user_passes_test(check_is_logged_in, login_url='token:list-tokenuser')
+def update_page_belong_to_token_user(request):
+    logged_in_token_user = TokenUser.objects.get(user=request.user, is_logged_in=True)
+    token_user_profile = logged_in_token_user.tokenuserprofile
+    graph = facebook.GraphAPI(logged_in_token_user.access_token)
+    list_pages = graph.get_connections(id='me', connection_name='accounts')
+    while 'paging' in list_pages:
+        for page in list_pages['data']:
+            name = page['name']
+            uid = page['id']
+            likes = int(graph.get_object('{0}?fields=fan_count'.format(uid))['fan_count'])
+            if PageOwnerByTokenUser.objects.filter(uid=uid).exists():
+                page_exists = PageOwnerByTokenUser.objects.filter(uid=uid).first()
+                if token_user_profile in page_exists.token_user_profile.all():
+                    page_exists.likes = likes
+                    page_exists.save()
+                else:
+                    page_exists.likes = likes
+                    page_exists.save()
+                    page_exists.token_user_profile.add(token_user_profile)
+            else:
+                profile_picture_link = 'https://graph.facebook.com/v3.1/{0}/picture?type=small&amp;redirect=true'.format(uid)
+                profile_link = 'https://www.facebook.com/{0}'.format(uid)
+                create_page = PageOwnerByTokenUser.objects.create(name=name, uid=uid, likes=likes, profile_picture_link=profile_picture_link, profile_link=profile_link)
+                create_page.token_user_profile.add(token_user_profile)
+        list_pages = graph.get_connections(id='me', connection_name='accounts', after=list_pages['paging']['cursors']['after'])
+    return redirect('page-tools:list-pages-inbox-tool')
+
+@login_required
+@user_passes_test(check_is_logged_in, login_url='token:list-tokenuser')
 @page_belong_to_token_user_profile
 def page_detail(request, pk):
     page = get_object_or_404(PageOwnerByTokenUser, pk=pk)
@@ -340,6 +369,8 @@ def delete_content_send_inbox(request, pk, content_pk):
 @user_passes_test(check_is_logged_in, login_url='token:list-tokenuser')
 @page_belong_to_token_user_profile
 def update_content_send_inbox(request, pk, content_pk):
+    logged_in_token_user = TokenUser.objects.get(user=request.user, is_logged_in=True)
+    page = get_object_or_404(PageOwnerByTokenUser, pk=pk)
     content = get_object_or_404(ContentSendInbox, pk=content_pk)
     if request.method == 'POST':
         form = UpdateContentSendInbox(request.POST, request.FILES, instance=content)
@@ -350,7 +381,19 @@ def update_content_send_inbox(request, pk, content_pk):
     else:
         form = UpdateContentSendInbox(instance=content)
     context = {
+        'title': 'Update Content {0}'.format(page.name),
+        'logged_in_token_user': logged_in_token_user,
+        'page': page,
         'content': content,
         'form': form
     }
     return render(request, 'pagetools/page_update_content.html', context=context)
+
+@login_required
+@user_passes_test(check_is_logged_in, login_url='token:list-tokenuser')
+@page_belong_to_token_user_profile
+def delete_image_in_content_send_inbox(request, pk, content_pk):
+    content = get_object_or_404(ContentSendInbox, pk=content_pk)
+    content.image.delete()
+    messages.success(request, 'Xóa Hình Ảnh Thành Công!')
+    return redirect('page-tools:page-setting-send-inbox', pk=pk)

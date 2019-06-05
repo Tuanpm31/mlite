@@ -1,20 +1,5 @@
 from django.urls import path, include
-from .views import (
-    list_token_user_added,
-    delete_token_user,
-    login_token_user,
-    logout_token_user,
-    list_pages_inbox_tool,
-    page_detail,
-    page_get_all_uid,
-    get_all_uid_ajax,
-    export_file_data_uid,
-    page_setting_send_inbox,
-    delete_token_page_manager,
-    delete_content_send_inbox,
-    update_content_send_inbox,
-    home,
-)
+from .views import *
 
 urlpatterns = [
     path('', home, name='home'),
@@ -27,6 +12,7 @@ urlpatterns = [
 
     path('page-tools/', include(([
         path('inboxpage/list', list_pages_inbox_tool, name='list-pages-inbox-tool'),
+        path('inboxpage/updatepage/', update_page_belong_to_token_user, name='update-list-pages'),
         path('inboxpage/<int:pk>/', page_detail, name='page-detail'),
         path('inboxpage/<int:pk>/getalluid/', page_get_all_uid, name='page-get-all-uid'),
         path('inboxpage/<int:pk>/getalluidajax/', get_all_uid_ajax, name='page-get-all-uid-ajax'),
@@ -35,6 +21,7 @@ urlpatterns = [
         path('inboxpage/<int:pk>/deletetokenpagemanager/<int:token_page_manager_pk>/', delete_token_page_manager, name='page-delete-token-page-manager'),
         path('inboxpage/<int:pk>/deletecontent/<int:content_pk>/', delete_content_send_inbox, name='page-delete-content'),
         path('inboxpage/<int:pk>/updatecontent/<int:content_pk>/', update_content_send_inbox, name='page-update-content'),
+        path('inboxpage/<int:pk>/deleteimageincontent/<int:content_pk>/', delete_image_in_content_send_inbox, name='page-delete-image-in-content'),
     ], 'pagetools'), namespace='page-tools'))
 
 ]

@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'page-tools:list-pages-inbox-tool' %}">Chọn Trang</a></li>
+          <li class="breadcrumb-item" aria-current="page">{{ page.name }}</li>
+        </ol>
+      </nav>
+    
     <div class="col-lg-8 col-md-8">
         <a style="font-size: 48px;" href="{% url 'page-tools:list-pages-inbox-tool' %}">
             <i class="fas fa-home"></i>
