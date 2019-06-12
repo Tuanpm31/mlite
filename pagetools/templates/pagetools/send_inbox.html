@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'page-tools:list-pages-inbox-tool' %}">Chọn Trang</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'page-tools:page-detail' page.pk %}">{{ page.name }}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'page-tools:page-setting-send-inbox' page.pk %}">Setting Content</a></li>
+                <li class="breadcrumb-item" aria-current="page">Gửi Tin</li>
+            </ol>
+        </nav>
+        <div class="col-lg-8 col-md-8">
+            <span style="font-size: 48px;">
+                <i class="fas fa-home"></i>
+            </span>
+                <strong>{{page.name}}</strong>
+        </div>
+        <div class="row">
+            <div class="col">
+            <form name="formpost" id="formpost" method="POST">
+                {% csrf_token %}
+                <h5 class="text-center text-muted">Option</h5>
+                <div class="row form-group">
+                    <div class="col-sm-3">
+                        <label for="delaytime">Thời gian giữa 2 lần gửi tin</label>
+                    </div>
+                    <div class="col-sm-9">
+                        <input type="number" class="form-control" name="delaytime" id="delaytime" value="5" required>
+                    </div> 
+                </div>
+                <div class="row form-group">
+                    <div class="col-sm-3">
+                        <label for="daybetween">Tin nhắn cuối cùng cách hiện tại</label>
+                    </div>
+                    <div class="col-sm-9">
+                        <input type="number" class="form-control" name="daybetween" id="daybetween" value="7" required>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                    <h5 class="text-center text-muted">Nick Gửi Tin</h5>
+                    <table class="table">
+                        <caption>Hệ thống sẽ tự động chọn tất cả các Token Page Manager để gửi tin</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Nick gửi tin</th>
+                                <th scope="col">Ảnh</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for token_page_manager in tokens_page_manager %}
+                            <tr>
+                                    <th scope="row">{{ forloop.counter }}</th>
+                                    <td>
+                                        <a href="{{token_page_manager.tokenpagemanagerprofile.profile_link}}" target="_blank">
+                                            {{token_page_manager.tokenpagemanagerprofile.name}}
+                                            <br>
+                                            <small>{{token_page_manager.tokenpagemanagerprofile.uid}}</small>
+                                        </a>
+                                    </td>
+                                    <td><img src="{{token_page_manager.tokenpagemanagerprofile.profile_picture_link}}" width="50px"></td>
+                                    <td><button type="button" class="btn btn-sm btn-success" disabled>Live</button></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <h5 class="text-center text-muted">List Conversation ID</h5>
+                    <textarea name="list_conversations_id" id="list_conversations_id" cols="55" rows="20" class="form-control" required></textarea>
+                    <hr>
+                    <input type="submit" name="start_send" id="start_send" value="Bắt đầu" class="btn btn-success btn-block">
+                </div>
+                <div class="col-sm-8">
+                    <div id="content">
+                        <h5 class="text-center text-muted">Content</h5>
+                        <table class="table">
+                            <caption>Hệ thống sẽ tự động chọn tất cả các Token Page Manager và Content để gửi, vì vậy Content nào không dùng bạn hãy xóa đi nhé</caption>
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Ảnh</th>
+                                    <th scope="col">Content</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            <thead>
+                                <tbody>
+                                    {% for content in contents %}
+                                        <tr>
+                                            <th scope="col">{{forloop.counter}}</th>
+                                            <td><img src="{{ MEDIA_URL }}{{content.image}}" alt="" width="40px"></td>
+                                            <td style="max-width: 500px">{{content.content}}</td>
+                                            <td>
+                                                <a href="{% url 'page-tools:page-update-content' page.pk content.pk %}" class="btn btn-primary btn-sm">Update</a>
+                                                <a href="{% url 'page-tools:page-delete-content' page.pk content.pk %}" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa tin nhắn này không?')">Xóa</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                        </table>
+                    </div>  
+                    <div id="progress" style="display: none">
+                        <input type="hidden" value="0" id="total_conversations_id_added">
+                        <input type="hidden" value="0" id="current_progress">
+                        <input type="hidden" value="0" id="send_success_count">
+                        <input type="hidden" value="0" id="send_failed_count">
+                        <h5 class="text-center text-muted">Tiến Trình Gửi Tin Nhắn</h5>
+                        <div class="row">
+                            <div class="col">
+                                <p class="font-weight-bold text-muted" id="progress_count"></p>
+                            </div>
+                            <div class="col">
+                                <p class="font-weight-bold text-success" id="success_count"></p>
+                            </div>
+                            <div class="col">
+                                <p class="font-weight-bold text-danger" id="failed_count"></p>
+                            </div>
+                        </div>
+                        <p class="text-info font-weight-bold" id="notification"></p>
+                        <ul class="list-group scroll-progress" id="progress-paragraph">
+                            
+                        </ul>
+                        <hr>
+                    </div>
+                    
+                    <div id="stop_and_continue" class="row" style="display: none">
+                        <div class="text-center">
+                            <button type="button" class="btn btn-danger" id="pause">Dừng Gửi tin</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>   
+    </div>          
+  </div>
+{% endblock content %}
+{% block script %}
+  <script>
+    var xhra;
+    $("#formpost").on("submit", function(e) {
+        e.preventDefault(e);
+        $("#content").hide(1000);
+        $("#start_send").hide(1000);
+        $("#progress").show(1000);
+        $("#stop_and_continue").show(1000);
+        var list_conversations_id_added = $('textarea[name="list_conversations_id"]').val();
+        var list_conversations_id = list_conversations_id_added.split("\n").filter(Boolean);
+        var total_conversations_id = list_conversations_id.length;
+        $("#total_conversations_id_added").val(total_conversations_id);
+        $("#notification").html('Bắt đầu gửi tin nhắn <img src="/static/images/loading.gif">');
+        $("#progress_count").html('Tiến trình ' + $("#current_progress").val()+ '/' + $("#total_conversations_id_added").val());
+        $("#success_count").html('Thành công: ' + $("#send_success_count").val());
+        $("#failed_count").html('Thất bại: ' + $("#send_failed_count").val());
+        $.ajax({
+            type: "POST",
+            url: '/page-tools/inboxpage/setting_send_inbox_ajax/{{page.pk}}/',
+            data: $(this).serialize(),
+            beforeSend: function(xhr, settings) {
+                function getCookie(name) {
+                    var cookieValue = null;
+                    if (document.cookie && document.cookie != '') {
+                        var cookies = document.cookie.split(';');
+                        for (var i = 0; i < cookies.length; i++) {
+                            var cookie = jQuery.trim(cookies[i]);
+                            // Does this cookie string begin with the name we want?
+                            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+                if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                    // Only send the token to relative URLs i.e. locally.
+                    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                }
+            },
+            success: function(response) {
+                if (response.error_connection) {
+                    alert(response.error_connection);
+                } else if (response.error_token) {
+                    alert(response.error_token);
+                } else {
+                    send_inbox(response.settings)
+                }
+            }
+        });
+    });
+    $("#pause").on('click', function(e) {
+        e.preventDefault();
+        $("#pause").hide();
+        $("#notification").html('Đã dừng gửi tin nhắn');
+        xhra.abort();
+    })
+    function send_inbox(settings) {
+        xhra = $.ajax({
+            type: "POST",
+            url: "/page-tools/inboxpage/sendinbox/{{page.pk}}/",
+            data: settings,
+            beforeSend: function(xhr, settings) {
+                function getCookie(name) {
+                    var cookieValue = null;
+                    if (document.cookie && document.cookie != '') {
+                        var cookies = document.cookie.split(';');
+                        for (var i = 0; i < cookies.length; i++) {
+                            var cookie = jQuery.trim(cookies[i]);
+                            // Does this cookie string begin with the name we want?
+                            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+                if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                    // Only send the token to relative URLs i.e. locally.
+                    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                }
+            },
+            success: function (response) {
+                var current_progress = Number($("#current_progress").val());
+                var total_conversations_id = Number($("#total_conversations_id_added").val());
+                current_progress++;
+                $("#current_progress").val(current_progress);    
+                $("#progress_count").html('Tiến trình ' + $("#current_progress").val()+ '/' + $("#total_conversations_id_added").val());
+                $("#success_count").html('Thành công: ' + $("#send_success_count").val());
+                $("#failed_count").html('Thành công: ' + $("#send_failed_count").val());
+                if (response.error_connection) {
+                    $("#notification").html('Lỗi, kiểm tra lại đường truyền mạng');
+                    alert('Đường truyền mạng lỗi, kiểm tra và làm lại');
+                    xhra.abort();
+                } else if (response.error_notfound) {
+                    $("#progress-paragraph").append('<li class="list-group-item text-muted" style="border: none">' + current_progress + '. <button class="btn btn-sm btn-danger" disabled>NotFound' + '</button></li>')
+                } else if (response.error_date) {
+                    $("#notification").html('Gửi tin tới ' + response.name + ': ' + response.uid + '<img src="/static/images/loading.gif">');
+                    $("#progress-paragraph").append('<li class="list-group-item text-muted" style="border: none">' + current_progress + '. Gửi tin nhắn tới ' + response.name + '<button class="btn btn-sm btn-danger" disabled>Thất bại</button>' + response.error_date + '</li>');
+                    var failed_count = Number($("#send_failed_count"));
+                    failed_count ++;
+                    $("#send_failed_count").val(failed_count);
+                    $("#failed_count").html('Thất bại: ' + $("#send_failed_count").val());
+                } else {
+                    $("#notification").html('Gửi tin tới ' + response.name + ': ' + response.uid + '<img src="/static/images/loading.gif">');
+                    if (response.status == "tokenerror") {
+                        $("#notification").html('Có Token Bị Lỗi, đã dừng gửi tin nhắn!');
+                        xhra.abort();
+                        alert('Có Token Bị Lỗi rồi, load lại page nhé')
+                    } else if (response.status == "success") {
+                        $("#progress-paragraph").append('<li class="list-group-item text-muted" style="border: none">' + current_progress + '. Gửi tin nhắn tới ' + response.name + '<button class="btn btn-sm btn-success" disabled>Thành công</button>, Người gửi ' + response.sender + '</li>');
+                        var success_count = Number($("#send_success_count").val());
+                        success_count++;
+                        $("#send_success_count").val(success_count)
+                        $("#success_count").html('Thành công: ' + $("#send_success_count").val());
+                    } else if (response.status == "failed") {
+                        $("#progress-paragraph").append('<li class="list-group-item text-muted" style="border: none">' + current_progress + '. Gửi tin nhắn tới ' + response.name + '<button class="btn btn-sm btn-danger" disabled>Thất bại, Người dùng không nhận tin</button></li>');
+                        var failed_count = Number($("#send_failed_count"));
+                        failed_count ++;
+                        $("#send_failed_count").val(failed_count);
+                        $("#failed_count").html('Thất bại: ' + $("#send_failed_count").val());
+                    }
+                }
+                if (Number($("#current_progress").val()) < Number($("#total_conversations_id_added").val())) {
+                    send_inbox(response.settings);
+                } else {
+                    $("#notification").html('Hoàn thành');
+                    alert('Hoàn thành!!')
+                    $("#start_send").show(1000);
+                    $("#pause").hide(1000);
+                }
+            }
+        });
+    }
+  </script>
+{% endblock script %}

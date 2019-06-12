@@ -76,7 +76,7 @@ def list_token_user_added(request):
                 try:
                     graph = facebook.GraphAPI(token.access_token)
                     info = graph.get_object('me')
-                except:
+                except facebook.GraphAPIError:
                     token_die = TokenUser.objects.get(access_token=token.access_token, user=user)
                     name = token_die.tokenuserprofile.name
                     uid = token_die.tokenuserprofile.uid
@@ -114,7 +114,7 @@ def login_token_user(request, pk):
             token_user.save()
             messages.success(request, 'Đăng nhập Token {0} - {1} thành công'.format(name, uid))
             return redirect('home')
-    except:
+    except facebook.GraphAPIError:
         token_user.delete()
         messages.warning(request, 'Token Die, hãy thử lại!!')
         return redirect('token:list-tokenuser')
@@ -158,7 +158,7 @@ def list_pages_inbox_tool(request):
             'pages': pages
         }
         return render(request, 'pagetools/list_pages_inbox_tool.html', context=context)
-    except:
+    except facebook.GraphAPIError:
         logged_in_token_user.delete()
         messages.warning(request, 'Token lỗi hoặc bị checkpoint, hãy thử lại token khác')
         return redirect('token:list-tokenuser')
@@ -202,15 +202,12 @@ def page_detail(request, pk):
     male_filter_uid = data.filter(gender='male').count()
     female_filter_uid = data.filter(gender='female').count()
     no_gender_filter_uid = data.filter(gender='').count()
-    paginator = Paginator(data, 10)
-    per_page = request.GET.get('page')
-    data_pagi = paginator.get_page(per_page)
     logged_in_token_user = TokenUser.objects.get(user=request.user, is_logged_in=True)
     context = {
         'title': page.name,
         'logged_in_token_user': logged_in_token_user,
         'page': page,
-        'data': data_pagi,
+        'data': data,  
         'total_count': total_uid,
         'male_count': male_filter_uid,
         'female_count': female_filter_uid,
@@ -286,7 +283,7 @@ def get_all_uid_ajax(request, pk):
                     total += 1
                 conversations = graph_page.get_connections(id='me', connection_name='conversations', after=conversations['paging']['cursors']['after'])
             data['mess_success'] = '<h4> Quét thành công {0} UID</h4>'.format(total)
-    except:
+    except facebook.GraphAPIError:
         data['error'] = 'Có lỗi, hãy thử kiểm tra lại Token!'
     return JsonResponse(data)
 
@@ -397,3 +394,123 @@ def delete_image_in_content_send_inbox(request, pk, content_pk):
     content.image.delete()
     messages.success(request, 'Xóa Hình Ảnh Thành Công!')
     return redirect('page-tools:page-setting-send-inbox', pk=pk)
+
+@login_required
+@user_passes_test(check_is_logged_in, login_url='token:list-tokenuser')
+@page_belong_to_token_user_profile
+def send_inbox(request, pk):
+    logged_in_token_user = TokenUser.objects.get(user=request.user, is_logged_in=True)
+    access_token = logged_in_token_user.access_token
+    graph = facebook.GraphAPI(access_token=access_token)
+    try:
+        graph.get_object('me')
+    except facebook.GraphAPIError:
+        logged_in_token_user.delete()
+        messages.warning(request, 'Token đã Die, vui lòng chọn Token Khác nhé')
+        return redirect('token:list-tokenuser')
+    page = get_object_or_404(PageOwnerByTokenUser, pk=pk)
+    contents = page.contents.all()
+    tokens_page_manager = page.tokenspagemanager.all()
+    for token_page_manager in tokens_page_manager:
+        page_access_token = token_page_manager.pageaccesstoken.page_access_token
+        try:
+            graph = facebook.GraphAPI(page_access_token)
+            graph.get_object('me')
+        except facebook.GraphAPIError:
+            token_page_manager.delete()
+    context = {
+        'title': '{0} Send Inbox'.format(page.name),
+        'logged_in_token_user': logged_in_token_user,
+        'page': page,
+        'contents': contents,
+        'tokens_page_manager': tokens_page_manager,
+    }
+    return render(request, 'pagetools/send_inbox.html', context=context)
+
+REMOTE_SERVER = 'https://www.google.com/'
+TIME_OUT = 5
+
+@login_required
+@user_passes_test(check_is_logged_in, login_url='token:list-tokenuser')
+@page_belong_to_token_user_profile
+def settings_send_inbox_ajax(request, pk):
+    page = get_object_or_404(PageOwnerByTokenUser, pk=pk)
+    tokens_page_manager = page.tokenspagemanager.all()
+    data = {}
+    for token_page_manager in tokens_page_manager:
+        page_access_token = token_page_manager.pageaccesstoken.page_access_token
+        try:
+            graph = facebook.GraphAPI(page_access_token)
+            graph.get_object('me')
+        except facebook.GraphAPIError:
+            token_page_manager.delete()
+            data['error_token'] = 'Token Lỗi, Có Token bị die, load lại page bạn nhé!!'
+            break
+    if request.method == "POST" and request.is_ajax():
+        try:
+            _ = requests.get(REMOTE_SERVER, timeout=TIME_OUT)
+            list_conversations = request.POST.get('list_conversations_id').split("\n")
+            list_conversations = list(filter(None, list_conversations))
+            list_conversations = [i.strip() for i in list_conversations]
+            settings = {
+                'delay_time': int(request.POST.get('delaytime')),
+                'day_between': int(request.POST.get('daybetween')),
+                'list_conversations': list_conversations
+            }
+            data['settings'] = settings
+        except requests.ConnectionError:
+            data['error_connection'] = 'Lỗi kết nối'
+    return JsonResponse(data)
+
+import time
+import datetime
+from .helper import *
+
+@login_required
+@user_passes_test(check_is_logged_in, login_url='token:list-tokenuser')
+@page_belong_to_token_user_profile
+def sendinbox_ajax(request, pk):
+    data = {}
+    if request.method == "POST" and request.is_ajax():
+        try:
+            _ = requests.get(REMOTE_SERVER, timeout=TIME_OUT)      
+        except requests.ConnectionError:
+            data['error_connection'] = 'Lỗi Kết Nối Mạng'
+            return JsonResponseO(data)
+        delay_time = int(request.POST.get('delay_time'))
+        day_between = int(request.POST.get('day_between'))
+        if delay_time > 4:
+            time.sleep(delay_time - 4)
+        else :
+            time.sleep(1)
+        list_conversations = request.POST.getlist('list_conversations[]')
+        conversation_id = list_conversations[0]
+        data['conversation_id'] = conversation_id
+        del list_conversations[0]
+        try:
+            info = DataUIDOfPage.objects.get(conversation_id=conversation_id)
+            data['name'] = info.name
+            data['uid'] = info.uid
+            current_date = datetime.datetime.now().date()
+            info_date = info.last_updated
+            data['days'] = (current_date - info_date).days
+            if (current_date - info_date).days < day_between:
+                data['error_date'] = 'người này mới nhận tin nhắn cách đây {0} ngày'.format((current_date - info_date).days)
+            else: 
+                sender, page_access_token = get_random_page_access_token(pk)
+                data['sender'] = sender
+                content = get_random_content(pk)
+                validated_content = content.content
+                validated_content = validate_content(content.content, info.name)
+                data['content'] = validated_content
+                data['status'] = send_inbox_helper(conversation_id, page_access_token, validated_content, content.image)
+        except DataUIDOfPage.DoesNotExist:
+            data['error_notfound'] = 'Not Found'
+        settings = {
+            'delay_time': delay_time,
+            'day_between': day_between,
+            'list_conversations': list_conversations
+        }
+        data['settings'] = settings
+    return JsonResponse(data)
+

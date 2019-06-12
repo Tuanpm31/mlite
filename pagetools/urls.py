@@ -22,6 +22,9 @@ urlpatterns = [
         path('inboxpage/<int:pk>/deletecontent/<int:content_pk>/', delete_content_send_inbox, name='page-delete-content'),
         path('inboxpage/<int:pk>/updatecontent/<int:content_pk>/', update_content_send_inbox, name='page-update-content'),
         path('inboxpage/<int:pk>/deleteimageincontent/<int:content_pk>/', delete_image_in_content_send_inbox, name='page-delete-image-in-content'),
+        path('inboxpage/<int:pk>/send/', send_inbox, name='page-send-inbox'),
+        path('inboxpage/setting_send_inbox_ajax/<int:pk>/', settings_send_inbox_ajax, name='page-settings-send-inbox-ajax'),
+        path('inboxpage/sendinbox/<int:pk>/', sendinbox_ajax, name='page-send-inbox-ajax'),
     ], 'pagetools'), namespace='page-tools'))
 
 ]

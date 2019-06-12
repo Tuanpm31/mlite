@@ -59,9 +59,8 @@
                       </table>
                       <div class="text-muted">
                           Hiện Có <strong style="color: red">{{ contents.count }}</strong> Content và <strong style="color: red">{{ tokens_page_manager.count }}</strong> Token Page Manager
-                
                       </div>
-                      <button type="button" class="btn btn-outline-success btn-block">Tiếp Tục</button>
+                      <a href="{% url 'page-tools:page-send-inbox' page.pk %}" class="btn btn-outline-success btn-block">Tiếp Tục</a>
                   </div>
               </div>
           </div>
@@ -89,6 +88,7 @@
                         <th scope="col">Content</th>
                         <th scope="col">Action</th>
                     </tr>
+                <thead>
                     <tbody>
                         {% for content in contents %}
                             <tr>
@@ -96,13 +96,12 @@
                                 <td><img src="{{ MEDIA_URL }}{{content.image}}" alt="" width="40px"></td>
                                 <td>{{content.content}}</td>
                                 <td>
-                                    <a href="{% url 'page-tools:page-update-content' page.pk content.pk %}" class="btn btn-primary btn-sm">Cập nhật</a>
+                                    <a href="{% url 'page-tools:page-update-content' page.pk content.pk %}" class="btn btn-primary btn-sm">Update</a>
                                     <a href="{% url 'page-tools:page-delete-content' page.pk content.pk %}" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa tin nhắn này không?')">Xóa</a>
                                 </td>
                             </tr>
                         {% endfor %}
                     </tbody>
-                </thead>
             </table>
         </div>
     </div>
