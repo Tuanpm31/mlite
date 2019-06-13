@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from accounts.views import register, ajax_test, ajaxresponse, sendinbox
+from accounts.views import register
 from django.contrib.auth.views import LoginView, LogoutView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -26,9 +26,6 @@ urlpatterns = [
     path('login/', LoginView.as_view(extra_context={'title': 'Đăng nhập'}), name='login'),
     path('logout/', LogoutView.as_view(extra_context={'title': 'Đăng Xuất'}, template_name='registration/logout.html'), name='logout'),
     path('', include('pagetools.urls')),
-    path('ajaxtest/', ajax_test),
-    path('ajaxresponse/', ajaxresponse, name='ajaxresponse'),
-    path('sendinbox/', sendinbox, name='sendinbox')
 ]
 
 if settings.DEBUG:
