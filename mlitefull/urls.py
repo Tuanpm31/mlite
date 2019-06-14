@@ -26,7 +26,7 @@ urlpatterns = [
     path('login/', LoginView.as_view(extra_context={'title': 'Đăng nhập'}), name='login'),
     path('logout/', LogoutView.as_view(extra_context={'title': 'Đăng Xuất'}, template_name='registration/logout.html'), name='logout'),
     path('', include('pagetools.urls')),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
