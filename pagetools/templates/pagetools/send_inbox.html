@@ -151,7 +151,7 @@
         var list_conversations_id = list_conversations_id_added.split("\n").filter(Boolean);
         var total_conversations_id = list_conversations_id.length;
         $("#total_conversations_id_added").val(total_conversations_id);
-        $("#notification").html('Bắt đầu gửi tin nhắn <img src="/static/images/loading.gif">');
+        $("#notification").html('Bắt đầu gửi tin nhắn <img src="accounts/static/images/loading.gif">');
         $("#progress_count").html('Tiến trình ' + $("#current_progress").val()+ '/' + $("#total_conversations_id_added").val());
         $("#success_count").html('Thành công: ' + $("#send_success_count").val());
         $("#failed_count").html('Thất bại: ' + $("#send_failed_count").val());
@@ -238,14 +238,14 @@
                 } else if (response.error_notfound) {
                     $("#progress-paragraph").append('<li class="list-group-item text-muted" style="border: none">' + current_progress + '. <button class="btn btn-sm btn-danger" disabled>NotFound' + '</button></li>')
                 } else if (response.error_date) {
-                    $("#notification").html('Gửi tin tới ' + response.name + ': ' + response.uid + '<img src="/static/images/loading.gif">');
+                    $("#notification").html('Gửi tin tới ' + response.name + ': ' + response.uid + '<img src="accounts/static/images/loading.gif">');
                     $("#progress-paragraph").append('<li class="list-group-item text-muted" style="border: none">' + current_progress + '. Gửi tin nhắn tới ' + response.name + '<button class="btn btn-sm btn-danger" disabled>Thất bại</button>' + response.error_date + '</li>');
                     var failed_count = Number($("#send_failed_count"));
                     failed_count ++;
                     $("#send_failed_count").val(failed_count);
                     $("#failed_count").html('Thất bại: ' + $("#send_failed_count").val());
                 } else {
-                    $("#notification").html('Gửi tin tới ' + response.name + ': ' + response.uid + '<img src="/static/images/loading.gif">');
+                    $("#notification").html('Gửi tin tới ' + response.name + ': ' + response.uid + '<img src="accounts/static/images/loading.gif">');
                     if (response.status == "tokenerror") {
                         $("#notification").html('Có Token Bị Lỗi, đã dừng gửi tin nhắn!');
                         xhra.abort();
