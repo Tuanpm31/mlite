@@ -32,7 +32,8 @@
                                 <span class="sr-only">Loading...</span>
                             </div>
                             <p>Hệ thống đang quét toàn bộ UID, bạn vui lòng chờ!</p>
-                            <a href="{% url 'page-tools:page-detail' page.pk %}" target="_blank">Để Theo Dõi Quá Trình Quét Hãy Quay trở lại Trang UID và reload lại page để xem tổng UID</p>
+                            <p id="added"></p>
+                            <input type="hidden" id="totaluidscan" value="0">
                         </div>
                         <div class="success_get_uid text-center" style="display: none">
                             <span style="font-size: 48px; color: green;">
@@ -48,7 +49,6 @@
 {% endblock content %}
 {% block script %}
     <script>
-        var xhr = null;
         $("#confirm_get_uid").on("submit", function(e) {
             e.preventDefault();
             $("#confirm_get_uid").hide();
@@ -77,25 +77,65 @@
                         xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
                     }
                 },
-                success: function(data) {
-                    if (data.error) {
-                        alert('Có lỗi xảy ra, kiểm tra lại đường truyền mạng hoặc Token!')
+                success: function(response) {
+                    if (response.error) {
+                        alert('Có lỗi xảy ra, kiểm tra lại đường truyền mạng hoặc Token!');
+                    } else if (response.after) {
+                        var totalscan = Number($("#totaluidscan").val())
+                        totalscan += response.added
+                        $("#totaluidscan").val(totalscan)
+                        $("#added").html('Thêm ' + totalscan + 'UID <button class="btn btn-sm btn-success" disabled>Thành Công</button>');
+                        get_uid_with_param_after(response.after);
                     }
-                    else {
-                        $(".loading_get_uid").hide();
-                        $(".success_get_uid").show();
-                        $(".success_get_uid").append(data['mess_success'])
-                        $("success_get_uid").append('<input type="button" value="Quay lại trang bắn tin" onClick="javascript:history.go(-1);" class="btn btn-secondary btn-lg">')
-                    }  
-                    console.log(data)
                 }
             });
         });
-        window.onbeforeunload = onUnload();
-
-        function onUnload() {
-            if(xhr) xhr.abort();
-            return;
-        };
+        function get_uid_with_param_after(after) {
+            var xhra = $.ajax({
+                type: "POST",
+                url: "{% url 'page-tools:page-get-uid-after' page.pk %}",
+                data: {
+                    'after': after
+                },
+                beforeSend: function(xhr, settings) {
+                    function getCookie(name) {
+                        var cookieValue = null;
+                        if (document.cookie && document.cookie != '') {
+                            var cookies = document.cookie.split(';');
+                            for (var i = 0; i < cookies.length; i++) {
+                                var cookie = jQuery.trim(cookies[i]);
+                                // Does this cookie string begin with the name we want?
+                                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                    break;
+                                }
+                            }
+                        }
+                        return cookieValue;
+                    }
+                    if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                        // Only send the token to relative URLs i.e. locally.
+                        xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                    }
+                },
+                success: function (response) {
+                    console.log(response);
+                    if (response.error) {
+                        alert('Có lỗi xảy ra, kiểm tra lại đường truyền mạng hoặc Token!');
+                        xhra.abort();
+                    } else if (response.after) {
+                        var totalscan = Number($("#totaluidscan").val())
+                        totalscan += response.added
+                        $("#totaluidscan").val(totalscan)
+                        $("#added").html('Thêm ' + totalscan + 'UID <button class="btn btn-sm btn-success" disabled>Thành Công</button>');
+                        get_uid_with_param_after(response.after);
+                    } else {
+                        $(".loading_get_uid").hide();
+                        $(".success_get_uid").show();
+                        $(".success_get_uid").append('<input type="button" value="Quay lại trang bắn tin" onClick="javascript:history.go(-1);" class="btn btn-secondary btn-lg">')
+                    }
+                }
+            });
+        }
     </script>
 {% endblock script %}

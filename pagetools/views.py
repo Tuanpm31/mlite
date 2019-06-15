@@ -247,6 +247,46 @@ def page_get_all_uid(request, pk):
     }
     return render(request, 'pagetools/page_get_all_uid.html', context=context)
 
+# @login_required
+# @user_passes_test(check_is_logged_in, login_url='token:list-tokenuser')
+# @page_belong_to_token_user_profile
+# def get_all_uid_ajax(request, pk):
+#     logged_in_token_user = TokenUser.objects.get(user=request.user, is_logged_in=True)
+#     page = get_object_or_404(PageOwnerByTokenUser, pk=pk)
+#     graph = facebook.GraphAPI(logged_in_token_user.access_token)
+#     data = {}
+#     try:
+#         if request.method == 'POST':
+#             page_access_token = graph.get_object('{0}?fields=access_token'.format(page.uid))['access_token']
+#             graph_page = facebook.GraphAPI(page_access_token)
+#             conversations = graph_page.get_connections(id='me', connection_name='conversations')
+#             total = 0
+#             while 'paging' in conversations:
+#                 for conversation in conversations['data']:
+#                     conversation_id = conversation['id']
+#                     name = conversation['participants']['data'][0]['name']
+#                     uid = conversation['participants']['data'][0]['id']
+#                     last_updated = conversation['updated_time'][0:10]
+#                     gender = ''
+#                     try:
+#                         gender = graph.get_object('{0}?fields=name,gender'.format(uid))['gender']
+#                     except:
+#                         gender = ''
+#                     defaults = {
+#                         'page': page,
+#                         'uid': uid
+#                     }
+#                     obj, created = DataUIDOfPage.objects.update_or_create(
+#                         page=page, conversation_id=conversation_id, name=name, uid=uid, last_updated=last_updated, gender=gender,
+#                         defaults=defaults,
+#                     )
+#                     total += 1
+#                 conversations = graph_page.get_connections(id='me', connection_name='conversations', after=conversations['paging']['cursors']['after'])
+#             data['mess_success'] = '<h4> Quét thành công {0} UID</h4>'.format(total)
+#     except facebook.GraphAPIError:
+#         data['error'] = 'Có lỗi, hãy thử kiểm tra lại Token!'
+#     return JsonResponse(data)
+
 @login_required
 @user_passes_test(check_is_logged_in, login_url='token:list-tokenuser')
 @page_belong_to_token_user_profile
@@ -256,37 +296,77 @@ def get_all_uid_ajax(request, pk):
     graph = facebook.GraphAPI(logged_in_token_user.access_token)
     data = {}
     try:
-        if request.method == 'POST':
+        if request.method == 'POST' and request.is_ajax():
             page_access_token = graph.get_object('{0}?fields=access_token'.format(page.uid))['access_token']
             graph_page = facebook.GraphAPI(page_access_token)
             conversations = graph_page.get_connections(id='me', connection_name='conversations')
-            total = 0
-            while 'paging' in conversations:
-                for conversation in conversations['data']:
-                    conversation_id = conversation['id']
-                    name = conversation['participants']['data'][0]['name']
-                    uid = conversation['participants']['data'][0]['id']
-                    last_updated = conversation['updated_time'][0:10]
+            added = 0
+            for conversation in conversations['data']:
+                conversation_id = conversation['id']
+                name = conversation['participants']['data'][0]['name']
+                uid = conversation['participants']['data'][0]['id']
+                last_updated = conversation['updated_time'][0:10]
+                gender = ''
+                try:
+                    gender = graph.get_object('{0}?fields=name,gender'.format(uid))['gender']
+                except:
                     gender = ''
-                    try:
-                        gender = graph.get_object('{0}?fields=name,gender'.format(uid))['gender']
-                    except:
-                        gender = ''
-                    defaults = {
-                        'page': page,
-                        'uid': uid
-                    }
-                    obj, created = DataUIDOfPage.objects.update_or_create(
-                        page=page, conversation_id=conversation_id, name=name, uid=uid, last_updated=last_updated, gender=gender,
-                        defaults=defaults,
-                    )
-                    total += 1
-                conversations = graph_page.get_connections(id='me', connection_name='conversations', after=conversations['paging']['cursors']['after'])
-            data['mess_success'] = '<h4> Quét thành công {0} UID</h4>'.format(total)
+                defaults = {
+                    'page': page,
+                    'uid': uid
+                }
+                obj, created = DataUIDOfPage.objects.update_or_create(
+                    page=page, conversation_id=conversation_id, name=name, uid=uid, last_updated=last_updated, gender=gender,
+                    defaults=defaults,
+                )
+                added += 1
+            data['added'] = added
+            if 'paging' in conversations:
+                data['after'] = conversations['paging']['cursors']['after']
     except facebook.GraphAPIError:
         data['error'] = 'Có lỗi, hãy thử kiểm tra lại Token!'
     return JsonResponse(data)
 
+@login_required
+@user_passes_test(check_is_logged_in, login_url='token:list-tokenuser')
+@page_belong_to_token_user_profile
+def get_uid_each_page_ajax(request, pk):
+    logged_in_token_user = TokenUser.objects.get(user=request.user, is_logged_in=True)
+    page = get_object_or_404(PageOwnerByTokenUser, pk=pk)
+    graph = facebook.GraphAPI(logged_in_token_user.access_token)
+    data = {}
+    try:
+        if request.method == 'POST' and request.is_ajax():
+            after = request.POST.get('after')
+            page_access_token = graph.get_object('{0}?fields=access_token'.format(page.uid))['access_token']
+            graph_page = facebook.GraphAPI(page_access_token)
+            conversations = graph_page.get_connections(id='me', connection_name='conversations', after=after)
+            added = 0
+            for conversation in conversations['data']:
+                conversation_id = conversation['id']
+                name = conversation['participants']['data'][0]['name']
+                uid = conversation['participants']['data'][0]['id']
+                last_updated = conversation['updated_time'][0:10]
+                gender = ''
+                try:
+                    gender = graph.get_object('{0}?fields=name,gender'.format(uid))['gender']
+                except:
+                    gender = ''
+                defaults = {
+                    'page': page,
+                    'uid': uid
+                }
+                obj, created = DataUIDOfPage.objects.update_or_create(
+                    page=page, conversation_id=conversation_id, name=name, uid=uid, last_updated=last_updated, gender=gender,
+                    defaults=defaults,
+                )
+                added += 1
+            data['added'] = added
+            if 'paging' in conversations:
+                data['after'] = conversations['paging']['cursors']['after']
+    except facebook.GraphAPIError:
+        data['error'] = 'Có lỗi, hãy thử kiểm tra lại Token!'
+    return JsonResponse(data)
 
 @login_required
 @user_passes_test(check_is_logged_in, login_url='token:list-tokenuser')
