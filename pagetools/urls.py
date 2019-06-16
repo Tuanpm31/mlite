@@ -14,6 +14,7 @@ urlpatterns = [
         path('inboxpage/list', list_pages_inbox_tool, name='list-pages-inbox-tool'),
         path('inboxpage/updatepage/', update_page_belong_to_token_user, name='update-list-pages'),
         path('inboxpage/<int:pk>/', page_detail, name='page-detail'),
+        path('inboxpage/<int:pk>/get_uid_with_ajax/', get_data_uid_with_ajax, name='get-data-uid-with-ajax'),
         path('inboxpage/<int:pk>/getalluid/', page_get_all_uid, name='page-get-all-uid'),
         path('inboxpage/<int:pk>/getuidwithafter/', get_uid_each_page_ajax, name='page-get-uid-after'),
         path('inboxpage/<int:pk>/getalluidajax/', get_all_uid_ajax, name='page-get-all-uid-ajax'),

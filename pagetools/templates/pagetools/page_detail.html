@@ -46,8 +46,8 @@
                                         <th scope="col">Tin Nhắn Cuối</th>     
                                       </tr>
                                     </thead>
-                                    <tbody>
-                                      {% for each_data in data %}
+                                    <!-- <tbody>
+
                                       <tr>
                                           <th scope="row">{{forloop.counter}}</th>
                                           <td>{{each_data.name}}</td>
@@ -55,12 +55,12 @@
                                           <td>{{each_data.gender}}</td>
                                           <td>{{each_data.last_updated}}</td>
                                         </tr>
-                                      {% empty %}
+                                      
                                         <tr>
                                           <th colspan="5" scope="row" class="text-center">Chưa Có Data, <a href="{% url 'page-tools:page-get-all-uid' page.pk %}">Quét Ngay</a></td>
                                         </tr>
-                                      {% endfor %}
-                                    </tbody>
+                                      
+                                    </tbody> -->
                             </table>
                             <!-- <ul class="pagination justify-content-end">
                               {% if data.has_previous %}
@@ -88,7 +88,27 @@
 {% block script %}
   <script>
     $(document).ready(function() {
-        $('#table-dataTable').DataTable();
+        $('#table-dataTable').DataTable({
+          "processing": true,
+          "language": {
+            'loadingRecords': '&nbsp;',
+            'processing': '<div class="spinner-border text-dark" role="status"><span class="sr-only">Loading...</span></div>'
+          },
+          "serverSide": false,
+          "searching": true,
+          "ajax": "{% url 'page-tools:get-data-uid-with-ajax' page.pk %}",
+          columns: [
+            {"data": "index"},
+            {"data": "name"},
+            {"data": "uid",
+              render: function (data, type, row) {
+                return '<a target="_blank" href="https://www.facebook.com/"' + row.uid + '>' + row.uid + '</a>';
+              }
+            },
+            {"data": "gender"},
+            {"data": "last_updated"}
+          ]
+        });
     } );
   </script>
 {% endblock script %}

@@ -207,13 +207,22 @@ def page_detail(request, pk):
         'title': page.name,
         'logged_in_token_user': logged_in_token_user,
         'page': page,
-        'data': data,  
         'total_count': total_uid,
         'male_count': male_filter_uid,
         'female_count': female_filter_uid,
         'nogender_count': no_gender_filter_uid,
     }
     return render(request, 'pagetools/page_detail.html', context=context)
+
+@login_required
+@user_passes_test(check_is_logged_in, login_url='token:list-tokenuser')
+@page_belong_to_token_user_profile
+def get_data_uid_with_ajax(request, pk):
+    page = get_object_or_404(PageOwnerByTokenUser, pk=pk)
+    data = page.data.all().values()
+    for i in range(len(data)):
+        data[i].update({'index': (i+1)})
+    return JsonResponse({"data": list(data)})
 
 
 @login_required
