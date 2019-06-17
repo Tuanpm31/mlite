@@ -18,6 +18,7 @@
           </div>
         </div>
       {% else %}
+        <a class="btn btn-primary" href="{% url 'gettoken:get-token-android' %}" target="_blank">Get Token Android</a>
         <a class="btn btn-outline-dark" href="{% url 'logout' %}">Đăng xuất</a>
       {% endif %}
   </nav>

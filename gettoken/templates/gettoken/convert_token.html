@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container">
+      <div class="col-sm-12">
+          <div class="card boder-0 shadow my-5">
+              <div class="card-body p-5">
+                  <form method="POST" id="form-send-token-ajax">
+                      {% csrf_token %}
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" name='token' id="token" placeholder="Token Cần Chuyển">
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-primary">Chuyển Đổi</button>
+                            </div>
+                        </div>
+                  </form>
+                  <div class="form-group">
+                      <label for="result">Kết Quả Chuyển Đổi</label>
+                      <input type="text" class="form-control" name="result" id="result">
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+{% endblock content %}
+{% block script %}
+  <script>
+      $("#form-send-token-ajax").on('submit', function(e) {
+          e.preventDefault(e);
+          $.ajax({
+              type: "POST",
+              url: "{% url 'gettoken:convert-token-ajax' %}",
+              data: $(this).serialize(),
+              beforeSend: function(xhr, settings) {
+                function getCookie(name) {
+                    var cookieValue = null;
+                    if (document.cookie && document.cookie != '') {
+                        var cookies = document.cookie.split(';');
+                        for (var i = 0; i < cookies.length; i++) {
+                            var cookie = jQuery.trim(cookies[i]);
+                            // Does this cookie string begin with the name we want?
+                            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+                if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                    // Only send the token to relative URLs i.e. locally.
+                    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                }
+            },
+            success: function (response) {
+                console.log(response);
+            }
+          });
+      })
+  </script>
+{% endblock script %}

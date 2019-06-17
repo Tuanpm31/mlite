@@ -55,7 +55,7 @@
             $(".loading_get_uid").show();
             $.ajax({
                 type: "POST",
-                url: "{% url 'page-tools:page-get-all-uid-ajax' page.pk %}",
+                url: "{% url 'page-tools:page-send-inbox-ajax' page.pk %}",
                 beforeSend: function(xhr, settings) {
                     function getCookie(name) {
                         var cookieValue = null;

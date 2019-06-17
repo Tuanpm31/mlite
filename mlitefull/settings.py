@@ -27,6 +27,8 @@ DEBUG = False
 ALLOWED_HOSTS = ['134.209.101.186']
 # '134.209.101.186'
 
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 6000
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -39,6 +41,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'accounts',
     'pagetools',
+    'gettoken',
     'django_cleanup.apps.CleanupConfig',
 ]
 

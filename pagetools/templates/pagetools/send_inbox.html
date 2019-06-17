@@ -158,7 +158,8 @@
         $("#failed_count").html('Thất bại: ' + $("#send_failed_count").val());
         $.ajax({
             type: "POST",
-            url: '/page-tools/inboxpage/setting_send_inbox_ajax/{{page.pk}}/',
+            // url: '/page-tools/inboxpage/setting_send_inbox_ajax/{{page.pk}}/',
+            url: "{% url 'page-tools:page-settings-send-inbox-ajax' page.pk %}",
             data: $(this).serialize(),
             beforeSend: function(xhr, settings) {
                 function getCookie(name) {
@@ -187,8 +188,12 @@
                 } else if (response.error_token) {
                     alert(response.error_token);
                 } else {
-                    send_inbox(response.settings)
+                    send_inbox(response.settings);
                 }
+            },
+            error: function (jqxhr, status, exception) {
+                alert('Tạm Dừng!!!');
+                console.log('Exception: ', exception);
             }
         });
     });
@@ -201,7 +206,9 @@
     function send_inbox(settings) {
         xhra = $.ajax({
             type: "POST",
-            url: "/page-tools/inboxpage/sendinbox/{{page.pk}}/",
+            // url: "/page-tools/inboxpage/sendinbox/{{page.pk}}/",
+            // url: "{% url 'page-tools:page-get-all-uid-ajax' page.pk %}",
+            url: "{% url 'page-tools:page-send-inbox-ajax' page.pk %}",
             data: settings,
             beforeSend: function(xhr, settings) {
                 function getCookie(name) {
@@ -243,7 +250,7 @@
                     $("#send_failed_count").val(failed_count);
                     $("#failed_count").html('Thất bại: ' + $("#send_failed_count").val());
                 } else if (response.error_date) {
-                    $("#notification").html('Gửi tin tới ' + response.name + ': ' + response.uid + '<img src="/accounts/static/images/loading.gif">');
+                    $("#notification").html('Gửi tin tới ' + response.name + ': ' + response.uid + '{% load static %} <img src="{% static "accounts/images/loading.gif" %}">');
                     $("#progress-paragraph").append('<li class="list-group-item text-muted" style="border: none">' + current_progress + '. Gửi tin nhắn tới ' + response.name + '<button class="btn btn-sm btn-danger" disabled>Thất bại</button>' + response.error_date + '</li>');
                     var failed_count = Number($("#send_failed_count").val());
                     failed_count ++;
@@ -276,7 +283,11 @@
                     alert('Hoàn thành!!')
                     $("#start_send").show(1000);
                     $("#pause").hide(1000);
-                }
+                }  
+            },
+            error: function (jqxhr, status, exception) {
+                console.log('Exception: ', exception);
+                alert('Đã có lỗi xảy ra, Load lại trang nhé!');
             }
         });
     }

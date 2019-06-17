@@ -26,6 +26,7 @@ urlpatterns = [
     path('login/', LoginView.as_view(extra_context={'title': 'Đăng nhập'}), name='login'),
     path('logout/', LogoutView.as_view(extra_context={'title': 'Đăng Xuất'}, template_name='registration/logout.html'), name='logout'),
     path('', include('pagetools.urls')),
+    path('gettoken/', include('gettoken.urls', namespace='gettoken')),
 ]
 
 if settings.DEBUG:
