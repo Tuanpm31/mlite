@@ -577,7 +577,7 @@ def sendinbox_ajax(request, pk):
         data['conversation_id'] = conversation_id
         del list_conversations[0]
         try:
-            info = DataUIDOfPage.objects.get(conversation_id=conversation_id)
+            info = DataUIDOfPage.objects.filter(conversation_id=conversation_id).first()
             data['name'] = info.name
             data['uid'] = info.uid
             current_date = datetime.datetime.now().date()

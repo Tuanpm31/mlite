@@ -53,7 +53,12 @@
                 }
             },
             success: function (response) {
-                console.log(response);
+                if (response.error) {
+                    alert('Token Lỗi, thử token khác nhé!');
+                } else {
+                    $("#result").val(response.result);
+                    alert('Chuyển Đổi Thành Công');
+                }
             }
           });
       })
