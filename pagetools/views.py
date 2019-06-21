@@ -386,13 +386,13 @@ def page_setting_send_inbox(request, pk):
     page = get_object_or_404(PageOwnerByTokenUser, pk=pk)
     tokens_page_manager = TokenPageManager.objects.filter(token_user_profile=token_user_profile, page=page)
     contents = page.contents.all()
-    for token_page_manager in tokens_page_manager:
-        page_access_token = token_page_manager.pageaccesstoken.page_access_token
-        try:
-            graph = facebook.GraphAPI(page_access_token)
-            info = graph.get_object('me')
-        except:
-            token_page_manager.delete()
+    # for token_page_manager in tokens_page_manager:
+    #     page_access_token = token_page_manager.pageaccesstoken.page_access_token
+    #     try:
+    #         graph = facebook.GraphAPI(page_access_token)
+    #         info = graph.get_object('me')
+    #     except:
+    #         token_page_manager.delete()
     if request.method == 'POST':
         if request.POST.get('tokenpagemanageradded'):
             token_page_manager_added = request.POST.get('tokenpagemanageradded')
