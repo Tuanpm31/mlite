@@ -561,11 +561,11 @@ from .helper import *
 def sendinbox_ajax(request, pk):
     data = {}
     if request.method == "POST" and request.is_ajax():
-        try:
-            _ = requests.get(REMOTE_SERVER, timeout=TIME_OUT)      
-        except requests.ConnectionError:
-            data['error_connection'] = 'Lỗi Kết Nối Mạng'
-            return JsonResponseO(data)
+        # try:
+        #     _ = requests.get(REMOTE_SERVER, timeout=TIME_OUT)      
+        # except requests.ConnectionError:
+        #     data['error_connection'] = 'Lỗi Kết Nối Mạng'
+        #     return JsonResponseO(data)
         delay_time = int(request.POST.get('delay_time'))
         day_between = int(request.POST.get('day_between'))
         if delay_time > 4:

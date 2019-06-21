@@ -239,11 +239,12 @@
                 $("#progress_count").html('Tiến trình ' + $("#current_progress").val()+ '/' + $("#total_conversations_id_added").val());
                 $("#success_count").html('Thành công: ' + $("#send_success_count").val());
                 $("#failed_count").html('Thất bại: ' + $("#send_failed_count").val());
-                if (response.error_connection) {
-                    $("#notification").html('Lỗi, kiểm tra lại đường truyền mạng');
-                    alert('Đường truyền mạng lỗi, kiểm tra và làm lại');
-                    xhra.abort();
-                } else if (response.error_notfound) {
+                // if (response.error_connection) {
+                //     $("#notification").html('Lỗi, kiểm tra lại đường truyền mạng');
+                //     alert('Đường truyền mạng lỗi, kiểm tra và làm lại');
+                //     xhra.abort();
+                // } 
+                 if (response.error_notfound) {
                     $("#progress-paragraph").append('<li class="list-group-item text-muted" style="border: none">' + current_progress + '. <button class="btn btn-sm btn-danger" disabled>NotFound' + '</button></li>');
                     var failed_count = Number($("#send_failed_count").val());
                     failed_count ++;
