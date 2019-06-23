@@ -371,11 +371,11 @@ def get_uid_each_page_ajax(request, pk):
                         defaults=defaults,
                     )
                 except:
-                    conversation_id = ''
-                    name = ''
-                    uid = ''
-                    last_updated = ''
-                    gender = ''
+                    conversation_id = 'not found'
+                    name = 'not found'
+                    uid = 'not found'
+                    last_updated = '2019-06-23'
+                    gender = 'not found'
                     defaults = {
                         'page': page,
                         'uid': uid
