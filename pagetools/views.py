@@ -361,14 +361,29 @@ def get_uid_each_page_ajax(request, pk):
                     gender = graph.get_object('{0}?fields=name,gender'.format(uid))['gender']
                 except:
                     gender = ''
-                defaults = {
-                    'page': page,
-                    'uid': uid
-                }
-                obj, created = DataUIDOfPage.objects.update_or_create(
-                    page=page, conversation_id=conversation_id, name=name, uid=uid, last_updated=last_updated, gender=gender,
-                    defaults=defaults,
-                )
+                try:
+                    defaults = {
+                        'page': page,
+                        'uid': uid
+                    }
+                    obj, created = DataUIDOfPage.objects.update_or_create(
+                        page=page, conversation_id=conversation_id, name=name, uid=uid, last_updated=last_updated, gender=gender,
+                        defaults=defaults,
+                    )
+                except:
+                    conversation_id = ''
+                    name = ''
+                    uid = ''
+                    last_updated = ''
+                    gender = ''
+                    defaults = {
+                        'page': page,
+                        'uid': uid
+                    }
+                    obj, created = DataUIDOfPage.objects.update_or_create(
+                        page=page, conversation_id=conversation_id, name=name, uid=uid, last_updated=last_updated, gender=gender,
+                        defaults=defaults,
+                    )
                 added += 1
             data['added'] = added
             if 'paging' in conversations:
@@ -386,13 +401,13 @@ def page_setting_send_inbox(request, pk):
     page = get_object_or_404(PageOwnerByTokenUser, pk=pk)
     tokens_page_manager = TokenPageManager.objects.filter(token_user_profile=token_user_profile, page=page)
     contents = page.contents.all()
-    # for token_page_manager in tokens_page_manager:
-    #     page_access_token = token_page_manager.pageaccesstoken.page_access_token
-    #     try:
-    #         graph = facebook.GraphAPI(page_access_token)
-    #         info = graph.get_object('me')
-    #     except:
-    #         token_page_manager.delete()
+    for token_page_manager in tokens_page_manager:
+        page_access_token = token_page_manager.pageaccesstoken.page_access_token
+        try:
+            graph = facebook.GraphAPI(page_access_token)
+            info = graph.get_object('me')
+        except facebook.GraphAPIError:
+            token_page_manager.delete()
     if request.method == 'POST':
         if request.POST.get('tokenpagemanageradded'):
             token_page_manager_added = request.POST.get('tokenpagemanageradded')
@@ -561,11 +576,11 @@ from .helper import *
 def sendinbox_ajax(request, pk):
     data = {}
     if request.method == "POST" and request.is_ajax():
-        # try:
-        #     _ = requests.get(REMOTE_SERVER, timeout=TIME_OUT)      
-        # except requests.ConnectionError:
-        #     data['error_connection'] = 'Lỗi Kết Nối Mạng'
-        #     return JsonResponseO(data)
+        try:
+            _ = requests.get(REMOTE_SERVER, timeout=TIME_OUT)      
+        except requests.ConnectionError:
+            data['error_connection'] = 'Lỗi Kết Nối Mạng'
+            return JsonResponseO(data)
         delay_time = int(request.POST.get('delay_time'))
         day_between = int(request.POST.get('day_between'))
         if delay_time > 4:
