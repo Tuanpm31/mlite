@@ -210,7 +210,6 @@
             // url: "{% url 'page-tools:page-get-all-uid-ajax' page.pk %}",
             url: "{% url 'page-tools:page-send-inbox-ajax' page.pk %}",
             data: settings,
-            timeout: 60000,
             beforeSend: function(xhr, settings) {
                 function getCookie(name) {
                     var cookieValue = null;
