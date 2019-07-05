@@ -402,11 +402,14 @@ def page_setting_send_inbox(request, pk):
     tokens_page_manager = TokenPageManager.objects.filter(token_user_profile=token_user_profile, page=page)
     contents = page.contents.all()
     for token_page_manager in tokens_page_manager:
-        page_access_token = token_page_manager.pageaccesstoken.page_access_token
-        try:
-            graph = facebook.GraphAPI(page_access_token)
-            info = graph.get_object('me')
-        except facebook.GraphAPIError:
+        if hasattr(token_page_manager, 'tokenpagemanagerprofile'):
+            page_access_token = token_page_manager.pageaccesstoken.page_access_token
+            try:
+                graph = facebook.GraphAPI(page_access_token)
+                info = graph.get_object('me')
+            except facebook.GraphAPIError:
+                token_page_manager.delete()
+        else:
             token_page_manager.delete()
     if request.method == 'POST':
         if request.POST.get('tokenpagemanageradded'):
@@ -516,11 +519,14 @@ def send_inbox(request, pk):
     contents = page.contents.all()
     tokens_page_manager = page.tokenspagemanager.all()
     for token_page_manager in tokens_page_manager:
-        page_access_token = token_page_manager.pageaccesstoken.page_access_token
-        try:
-            graph = facebook.GraphAPI(page_access_token)
-            graph.get_object('me')
-        except facebook.GraphAPIError:
+        if hasattr(token_page_manager, 'tokenpagemanagerprofile'):
+            page_access_token = token_page_manager.pageaccesstoken.page_access_token
+            try:
+                graph = facebook.GraphAPI(page_access_token)
+                graph.get_object('me')
+            except facebook.GraphAPIError:
+                token_page_manager.delete()
+        else:
             token_page_manager.delete()
     context = {
         'title': '{0} Send Inbox'.format(page.name),
@@ -556,10 +562,12 @@ def settings_send_inbox_ajax(request, pk):
             list_conversations = request.POST.get('list_conversations_id').split("\n")
             list_conversations = list(filter(None, list_conversations))
             list_conversations = [i.strip() for i in list_conversations]
+            contents_checked = request.POST.getlist('contents[]')
             settings = {
                 'delay_time': int(request.POST.get('delaytime')),
                 'day_between': int(request.POST.get('daybetween')),
-                'list_conversations': list_conversations
+                'list_conversations': list_conversations,
+                'contents_checked': contents_checked
             }
             data['settings'] = settings
         except requests.ConnectionError:
@@ -584,36 +592,44 @@ def sendinbox_ajax(request, pk):
         delay_time = int(request.POST.get('delay_time'))
         day_between = int(request.POST.get('day_between'))
         if delay_time > 4:
-            time.sleep(delay_time - 4)
+            time.sleep(delay_time - 2)
         else :
-            time.sleep(1)
+            time.sleep(2)
         list_conversations = request.POST.getlist('list_conversations[]')
+        contents_checked = request.POST.getlist('contents_checked[]')
+        contents_checked = list(map(int, contents_checked))
         conversation_id = list_conversations[0]
         data['conversation_id'] = conversation_id
         del list_conversations[0]
-        try:
-            info = DataUIDOfPage.objects.filter(conversation_id=conversation_id).first()
+        # try:
+        info = DataUIDOfPage.objects.filter(conversation_id=conversation_id).first()
+        if info:
             data['name'] = info.name
             data['uid'] = info.uid
+            sender, page_access_token = get_random_page_access_token(pk)
             current_date = datetime.datetime.now().date()
-            info_date = info.last_updated
+            graph_page = facebook.GraphAPI(page_access_token)
+            get_last_day = datetime.datetime.strptime(graph_page.get_connections('{0}'.format(conversation_id), 'messages')['data'][0]['created_time'][0:10], '%Y-%m-%d').date()
+            info_date = get_last_day
             data['days'] = (current_date - info_date).days
             if (current_date - info_date).days < day_between:
                 data['error_date'] = 'người này mới nhận tin nhắn cách đây {0} ngày'.format((current_date - info_date).days)
-            else: 
-                sender, page_access_token = get_random_page_access_token(pk)
+            else:          
                 data['sender'] = sender
-                content = get_random_content(pk)
+                content = get_random_content(pk, contents_checked)
                 validated_content = content.content
                 validated_content = validate_content(content.content, info.name)
                 data['content'] = validated_content
                 data['status'] = send_inbox_helper(conversation_id, page_access_token, validated_content, content.image)
-        except DataUIDOfPage.DoesNotExist:
+        else:
             data['error_notfound'] = 'Not Found'
+        # except DataUIDOfPage.DoesNotExist:
+        #     data['error_notfound'] = 'Not Found'
         settings = {
             'delay_time': delay_time,
             'day_between': day_between,
-            'list_conversations': list_conversations
+            'list_conversations': list_conversations,
+            'contents_checked': contents_checked
         }
         data['settings'] = settings
     return JsonResponse(data)

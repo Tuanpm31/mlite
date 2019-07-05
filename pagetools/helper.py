@@ -10,13 +10,13 @@ def get_random_page_access_token(page_pk):
     page_access_token = rd.pageaccesstoken.page_access_token
     return sender, page_access_token
 
-def get_random_content(page_pk):
+def get_random_content(page_pk, contents_checked):
     page = get_object_or_404(PageOwnerByTokenUser, pk=page_pk)
-    rd = random.choice(page.contents.all())
+    rd = random.choice(page.contents.filter(pk__in=contents_checked))
     return rd
 
 def validate_content(content, name):
-    icons = ['😍', '😘', '💓', '😂', '🤣', '😚', '🎁', '😽']
+    icons = ['😍', '😘', '💓', '😂', '🤣', '😚', '🎁', '😽', '🙂', '😙', '😬', '❣️', '💕', '🤤']
     content = content.replace('[[full_name]]', name)
     content = content.replace('[[emo_fun]]', random.choice(icons))
     return content

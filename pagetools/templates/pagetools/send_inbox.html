@@ -79,10 +79,15 @@
                     <div id="content">
                         <h5 class="text-center text-muted">Content</h5>
                         <table class="table">
-                            <caption>Hệ thống sẽ tự động chọn tất cả các Token Page Manager và Content để gửi, vì vậy Content nào không dùng bạn hãy xóa đi nhé</caption>
-                            <thead class="thead-dark">
+                            <caption>Chọn Content để gửi, để chọn tất cả, hãy click vào ô trên cùng nhé!</caption>
+                            <thead class="thead">
                                 <tr>
-                                    <th scope="col">#</th>
+                                    <th scope="col">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="select-all-content" name="select-all-content">
+                                            <label class="custom-control-label" for="select-all-content"></label>
+                                        </div>
+                                    </th>
                                     <th scope="col">Ảnh</th>
                                     <th scope="col">Content</th>
                                     <th scope="col">Action</th>
@@ -91,7 +96,12 @@
                                 <tbody>
                                     {% for content in contents %}
                                         <tr>
-                                            <th scope="col">{{forloop.counter}}</th>
+                                            <th scope="col">
+                                                <div class="custom-control custom-checkbox">
+                                                    <input type="checkbox" class="custom-control-input" id="content-checkbox-{{content.pk}}" name="contents[]" value="{{content.pk}}">
+                                                    <label class="custom-control-label" for="content-checkbox-{{content.pk}}"></label>
+                                                </div>
+                                            </th>
                                             <td><img src="{{ MEDIA_URL }}{{content.image}}" alt="" width="40px"></td>
                                             <td style="max-width: 500px">{{content.content}}</td>
                                             <td>
@@ -140,62 +150,79 @@
 {% endblock content %}
 {% block script %}
   <script>
+    $('#select-all-content').click(function() {
+        var contents = document.getElementsByName('contents[]');
+        if($("#select-all-content").is(':checked')) {
+            for (var i = 0; i < contents.length; i++) {
+                contents[i].checked = true;
+            }
+        } else {
+            for (var i = 0; i < contents.length; i++) {
+                contents[i].checked = false;
+            }
+        }
+    });
+
     var xhra;
     $("#formpost").on("submit", function(e) {
         e.preventDefault(e);
-        $("#content").hide(1000);
-        $("#start_send").hide(1000);
-        $("#progress").show(1000);
-        $("#stop_and_continue").show(1000);
-        var list_conversations_id_added = $('textarea[name="list_conversations_id"]').val();
-        var list_conversations_id = list_conversations_id_added.split("\n").filter(Boolean);
-        var total_conversations_id = list_conversations_id.length;
-        $("#total_conversations_id_added").val(total_conversations_id);
-        
-        $("#notification").html('Bắt đầu gửi tin nhắn {% load static %} <img src="{% static "accounts/images/loading.gif" %}">');
-        $("#progress_count").html('Tiến trình ' + $("#current_progress").val()+ '/' + $("#total_conversations_id_added").val());
-        $("#success_count").html('Thành công: ' + $("#send_success_count").val());
-        $("#failed_count").html('Thất bại: ' + $("#send_failed_count").val());
-        $.ajax({
-            type: "POST",
-            // url: '/page-tools/inboxpage/setting_send_inbox_ajax/{{page.pk}}/',
-            url: "{% url 'page-tools:page-settings-send-inbox-ajax' page.pk %}",
-            data: $(this).serialize(),
-            beforeSend: function(xhr, settings) {
-                function getCookie(name) {
-                    var cookieValue = null;
-                    if (document.cookie && document.cookie != '') {
-                        var cookies = document.cookie.split(';');
-                        for (var i = 0; i < cookies.length; i++) {
-                            var cookie = jQuery.trim(cookies[i]);
-                            // Does this cookie string begin with the name we want?
-                            if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                                break;
+        var contents_checked = $("input[name='contents[]']:checked").map(function(){return $(this).val();}).get();
+        if (contents_checked.length <= 0) {
+            alert('Chọn ít nhất một conten để gửi tin');
+        } else {
+            $("#content").hide(1000);
+            $("#start_send").hide(1000);
+            $("#progress").show(1000);
+            $("#stop_and_continue").show(1000);
+            var list_conversations_id_added = $('textarea[name="list_conversations_id"]').val();
+            var list_conversations_id = list_conversations_id_added.split("\n").filter(Boolean);
+            var total_conversations_id = list_conversations_id.length;
+            $("#total_conversations_id_added").val(total_conversations_id);
+            $("#notification").html('Bắt đầu gửi tin nhắn {% load static %} <img src="{% static "accounts/images/loading.gif" %}">');
+            $("#progress_count").html('Tiến trình ' + $("#current_progress").val()+ '/' + $("#total_conversations_id_added").val());
+            $("#success_count").html('Thành công: ' + $("#send_success_count").val());
+            $("#failed_count").html('Thất bại: ' + $("#send_failed_count").val());
+            $.ajax({
+                type: "POST",
+                // url: '/page-tools/inboxpage/setting_send_inbox_ajax/{{page.pk}}/',
+                url: "{% url 'page-tools:page-settings-send-inbox-ajax' page.pk %}",
+                data: $(this).serialize(),
+                beforeSend: function(xhr, settings) {
+                    function getCookie(name) {
+                        var cookieValue = null;
+                        if (document.cookie && document.cookie != '') {
+                            var cookies = document.cookie.split(';');
+                            for (var i = 0; i < cookies.length; i++) {
+                                var cookie = jQuery.trim(cookies[i]);
+                                // Does this cookie string begin with the name we want?
+                                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                    break;
+                                }
                             }
                         }
+                        return cookieValue;
                     }
-                    return cookieValue;
+                    if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                        // Only send the token to relative URLs i.e. locally.
+                        xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                    }
+                },
+                success: function(response) {
+                    if (response.error_connection) {
+                        alert(response.error_connection);
+                    } else if (response.error_token) {
+                        alert(response.error_token);
+                    } else {
+                        send_inbox(response.settings);
+                    }
+                },
+                error: function (jqxhr, status, exception) {
+                    alert('Tạm Dừng!!!');
+                    console.log('Exception: ', exception);
                 }
-                if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-                    // Only send the token to relative URLs i.e. locally.
-                    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-                }
-            },
-            success: function(response) {
-                if (response.error_connection) {
-                    alert(response.error_connection);
-                } else if (response.error_token) {
-                    alert(response.error_token);
-                } else {
-                    send_inbox(response.settings);
-                }
-            },
-            error: function (jqxhr, status, exception) {
-                alert('Tạm Dừng!!!');
-                console.log('Exception: ', exception);
-            }
-        });
+            });
+        }
     });
     $("#pause").on('click', function(e) {
         e.preventDefault();
@@ -251,7 +278,7 @@
                     $("#send_failed_count").val(failed_count);
                     $("#failed_count").html('Thất bại: ' + $("#send_failed_count").val());
                 } else if (response.error_date) {
-                    $("#notification").html('Gửi tin tới ' + response.name + ': ' + response.uid + '{% load static %} <img src="{% static "accounts/images/loading.gif" %}">');
+                    $("#notification").html('Gửi tin tới ' + response.name + ': ' + response.uid + ' {% load static %} <img src="{% static "accounts/images/loading.gif" %}">');
                     $("#progress-paragraph").append('<li class="list-group-item text-muted" style="border: none">' + current_progress + '. Gửi tin nhắn tới ' + response.name + '<button class="btn btn-sm btn-danger" disabled>Thất bại</button>' + response.error_date + '</li>');
                     var failed_count = Number($("#send_failed_count").val());
                     failed_count ++;
