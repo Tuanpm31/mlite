@@ -24,7 +24,7 @@ SECRET_KEY = 'v4*(vl0=0w(bq^*$vv#i-uq+)1rtz1-w0(dw##^3pim9qmkg6v'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['www.mlite.tk', 'mlite.tk', '134.209.101.186']
+ALLOWED_HOSTS = ['134.209.101.186']
 # '134.209.101.186'
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 6000
@@ -96,7 +96,7 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'mlitedbbackup',
+            'NAME': 'mlitedb',
             'USER': 'phmtuan313',
             'PASSWORD': 'phamminhtam313',
             'HOST': 'localhost',
