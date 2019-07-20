@@ -96,7 +96,7 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'mlitedb',
+            'NAME': 'mlitedbbackup',
             'USER': 'phmtuan313',
             'PASSWORD': 'phamminhtam313',
             'HOST': 'localhost',
