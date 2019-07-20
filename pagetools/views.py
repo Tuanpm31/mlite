@@ -399,7 +399,7 @@ def page_setting_send_inbox(request, pk):
     logged_in_token_user = TokenUser.objects.get(user=request.user, is_logged_in=True)
     token_user_profile = logged_in_token_user.tokenuserprofile
     page = get_object_or_404(PageOwnerByTokenUser, pk=pk)
-    tokens_page_manager = TokenPageManager.objects.filter(token_user_profile=token_user_profile, page=page)
+    tokens_page_manager = page.tokenspagemanager.all()
     contents = page.contents.all()
     for token_page_manager in tokens_page_manager:
         if hasattr(token_page_manager, 'tokenpagemanagerprofile'):
