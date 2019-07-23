@@ -97,7 +97,7 @@ else:
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'mlitedb',
-            'USER': 'phmtuan313',
+            'USER': 'phmtuan',
             'PASSWORD': 'phamminhtam313',
             'HOST': 'localhost',
             'PORT': '',
